@@ -1,17 +1,24 @@
 package org.example;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.BoostingQueryBuilder;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.range.Range;
+import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
+import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.example.utils.EsClientUtils;
 import org.junit.Test;
@@ -26,6 +33,7 @@ import java.util.Map;
  * @date 2020/7/16 22:09
  */
 public class Query {
+  ObjectMapper objectMapper = new ObjectMapper();
 
   String index = "person";
   String type = "man";
@@ -372,5 +380,149 @@ public class Query {
     for (SearchHit hit : search.getHits().getHits()) {
       System.out.println("hit = " + hit.getSourceAsMap());
     }
+  }
+
+  @Test
+  public void boostingQuery() throws IOException {
+    SearchRequest searchRequest = new SearchRequest(index);
+    searchRequest.types(type);
+
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+    BoostingQueryBuilder boostingQueryBuilder =
+        QueryBuilders.boostingQuery(
+                QueryBuilders.matchQuery("address", "北京"), QueryBuilders.matchQuery("name", "国庆"))
+            .negativeBoost(0.5f);
+
+    searchSourceBuilder.query(boostingQueryBuilder);
+
+    searchRequest.source(searchSourceBuilder);
+
+    SearchResponse search =
+        EsClientUtils.getEsClient().search(searchRequest, RequestOptions.DEFAULT);
+
+    for (SearchHit hit : search.getHits().getHits()) {
+      System.out.println("hit.getSourceAsMap() = " + hit.getSourceAsMap());
+    }
+  }
+
+  @Test
+  public void filterQuery() throws IOException {
+
+    SearchRequest searchRequest = new SearchRequest(index);
+    searchRequest.types(type);
+
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+    BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+    boolQueryBuilder.filter(QueryBuilders.termQuery("sex", "男"));
+    boolQueryBuilder.filter(QueryBuilders.rangeQuery("age").lte(32));
+
+    searchSourceBuilder.query(boolQueryBuilder);
+
+    searchRequest.source(searchSourceBuilder);
+
+    SearchResponse search =
+        EsClientUtils.getEsClient().search(searchRequest, RequestOptions.DEFAULT);
+
+    for (SearchHit hit : search.getHits().getHits()) {
+      System.out.println("hit.getSourceAsMap() = " + hit.getSourceAsMap());
+    }
+  }
+
+  @Test
+  public void highlightQuery() throws IOException {
+
+    SearchRequest searchRequest = new SearchRequest(index);
+    searchRequest.types(type);
+
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+    searchSourceBuilder.query(QueryBuilders.matchQuery("address", "北京"));
+
+    HighlightBuilder highlightBuilder = new HighlightBuilder();
+
+    highlightBuilder
+        .field("address", 10)
+        .preTags("<font color='red'>") //
+        .postTags("</font>");
+
+    searchSourceBuilder.highlighter(highlightBuilder);
+
+    searchRequest.source(searchSourceBuilder);
+
+    SearchResponse search =
+        EsClientUtils.getEsClient().search(searchRequest, RequestOptions.DEFAULT);
+
+    for (SearchHit hit : search.getHits().getHits()) {
+
+      System.out.println("hit = " + hit.getHighlightFields().get("address"));
+    }
+  }
+
+  // 聚合查询
+
+  @Test
+  public void CardinalityQuery() throws IOException {
+    SearchRequest searchRequest = new SearchRequest(index);
+    searchRequest.types(type);
+
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+    searchSourceBuilder.aggregation(AggregationBuilders.cardinality("agg").field("province"));
+
+    searchRequest.source(searchSourceBuilder);
+
+    SearchResponse search =
+        EsClientUtils.getEsClient().search(searchRequest, RequestOptions.DEFAULT);
+
+    Cardinality agg = search.getAggregations().get("agg");
+    long value = agg.getValue();
+
+    System.out.println("value = " + value);
+  }
+
+  @Test
+  public void rangeQuery() throws IOException {
+    SearchRequest searchRequest = new SearchRequest(index);
+    searchRequest.types(type);
+
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+    searchSourceBuilder.aggregation(
+        AggregationBuilders.range("num") //
+            .field("age") //
+            .addRange(20, 30));
+
+    searchRequest.source(searchSourceBuilder);
+
+    SearchResponse search =
+        EsClientUtils.getEsClient().search(searchRequest, RequestOptions.DEFAULT);
+
+    Range num = search.getAggregations().get("num");
+
+    for (Range.Bucket bucket : num.getBuckets()) {
+      System.out.println("bucket.getFrom() = " + bucket.getFrom());
+      System.out.println("bucket.getFrom() = " + bucket.getTo());
+      System.out.println("bucket.getFrom() = " + bucket.getDocCount());
+    }
+  }
+
+  // 统计聚合查询
+  @Test
+  public void f() throws IOException {
+    SearchRequest searchRequest = new SearchRequest(index);
+    searchRequest.types(type);
+
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+    searchSourceBuilder.aggregation(AggregationBuilders.extendedStats("agg").field("age"));
+
+    searchRequest.source(searchSourceBuilder);
+
+    SearchResponse search =
+        EsClientUtils.getEsClient().search(searchRequest, RequestOptions.DEFAULT);
+
+    ExtendedStats agg = search.getAggregations().get("agg");
+
+    System.out.println("agg = " + objectMapper.writeValueAsString(agg));
   }
 }

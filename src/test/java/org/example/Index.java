@@ -52,8 +52,14 @@ public class Index {
             .field("type", "date") //
             .field("format", "yyyy-MM-dd")
             .endObject()
+            .startObject("province") //
+            .field("type", "keyword") //
+            .endObject()
             .startObject("address") //
             .field("type", "text") //
+            .endObject() //
+            .startObject("ipAddr") //
+            .field("type", "ip") //
             .endObject() //
             .startObject("des") //
             .field("type", "text") //

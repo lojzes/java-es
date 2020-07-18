@@ -16,7 +16,8 @@ import org.example.utils.EsClientUtils;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,9 +34,20 @@ public class Doc {
   String type = "man";
 
   @Test
-  public void docCreate() throws IOException {
+  public void docCreate() throws IOException, ParseException {
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    Person person = new Person(2, "张三", 30, "男", new Date(), "北京，昌平，沙河", "fdsafsad发大发");
+    Person person =
+        new Person(
+            2,
+            "张三",
+            30,
+            "男",
+            simpleDateFormat.parse("1990-09-09"),
+            "北京",
+            "昌平，沙河",
+            "192.168.1.111",
+            "fdsafsad发大发");
 
     String s = objectMapper.writeValueAsString(person);
 
@@ -77,20 +89,142 @@ public class Doc {
   }
 
   @Test
-  public void batchAddDoc() throws IOException {
+  public void batchAddDoc() throws IOException, ParseException {
 
-    Person person1 = new Person(1, "小米", 20, "男", new Date(), "北京 海淀 西二旗", "fdsafsad发大发");
-    Person person2 = new Person(2, "lyy", 23, "男", new Date(), "天津 红桥", "fdsafsad发大发");
-    Person person3 = new Person(3, "lojzes", 30, "男", new Date(), "北京 西青 张家窝", "范德萨发生的");
-    Person person4 = new Person(4, "张三", 32, "女", new Date(), "北京 河东", "古方红糖人");
-    Person person5 = new Person(5, "李四", 32, "男", new Date(), "北京 河东", "恢复工具");
-    Person person6 = new Person(5, "王五", 32, "女", new Date(), "北京 河东", "糊涂");
-    Person person7 = new Person(6, "赵六", 32, "男", new Date(), "北京 河东", "坦然坦然坦然");
-    Person person8 = new Person(7, "国庆", 32, "女", new Date(), "北京 河东", "也太容易");
-    Person person9 = new Person(8, "李娜", 32, "男", new Date(), "北京 河东", "也会烦得很");
-    Person person10 = new Person(9, "谢娜", 32, "女", new Date(), "北京 河东", "韩国护肤");
-    Person person11 = new Person(10, "何炅", 32, "男", new Date(), "北京 河东", " 公司的股份的时光");
-    Person person12 = new Person(11, "黄磊", 32, "男", new Date(), "北京 河东", "割发代首告诉辅导员人");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    Person person1 =
+        new Person(
+            1,
+            "小米",
+            20,
+            "男",
+            simpleDateFormat.parse("1989-12-01"),
+            "北京",
+            "海淀 西二旗",
+            "192.168.2.1",
+            "fdsafsad发大发");
+    Person person2 =
+        new Person(
+            2,
+            "lyy",
+            23,
+            "男",
+            simpleDateFormat.parse("1999-12-12"),
+            "天津",
+            " 红桥",
+            "192.168.2.2",
+            "fdsafsad发大发");
+    Person person3 =
+        new Person(
+            3,
+            "lojzes",
+            30,
+            "男",
+            simpleDateFormat.parse("1978-12-03"),
+            "天津",
+            "西青 张家窝",
+            "192.168.2.3",
+            "范德萨发生的");
+    Person person4 =
+        new Person(
+            4,
+            "张三",
+            32,
+            "女",
+            simpleDateFormat.parse("1989-11-02"),
+            "天津",
+            "北京 河东",
+            "192.168.2.4",
+            "古方红糖人");
+    Person person5 =
+        new Person(
+            5,
+            "李四",
+            32,
+            "男",
+            simpleDateFormat.parse("1988-05-22"),
+            "天津",
+            "北京 河东",
+            "192.168.2.5",
+            "恢复工具");
+    Person person6 =
+        new Person(
+            5,
+            "王五",
+            32,
+            "女",
+            simpleDateFormat.parse("1999-12-11"),
+            "上海",
+            "河东",
+            "192.168.2.6",
+            "糊涂");
+    Person person7 =
+        new Person(
+            6,
+            "赵六",
+            32,
+            "男",
+            simpleDateFormat.parse("2000-02-02"),
+            "上海",
+            "河东",
+            "192.168.2.7",
+            "坦然坦然坦然");
+    Person person8 =
+        new Person(
+            7,
+            "国庆",
+            32,
+            "女",
+            simpleDateFormat.parse("1992-12-12"),
+            "广州",
+            "河东",
+            "192.168.2.8",
+            "也太容易");
+    Person person9 =
+        new Person(
+            8,
+            "李娜",
+            32,
+            "男",
+            simpleDateFormat.parse("1993-03-09"),
+            "北京",
+            "北京 河东",
+            "192.168.2.9",
+            "也会烦得很");
+    Person person10 =
+        new Person(
+            9,
+            "谢娜",
+            32,
+            "女",
+            simpleDateFormat.parse("1994-12-09"),
+            "北京",
+            "北京 河东",
+            "192.168.2.10",
+            "韩国护肤");
+    Person person11 =
+        new Person(
+            10,
+            "何炅",
+            32,
+            "男",
+            simpleDateFormat.parse("1995-09-08"),
+            "北京",
+            "北京 河东",
+            "192.168.2.11",
+            " 公司的股份的时光");
+    Person person12 =
+        new Person(
+            11,
+            "黄磊",
+            32,
+            "男",
+            simpleDateFormat.parse("1996-09-09"),
+            "北京",
+            "北京 河东",
+            "192.168.2.12",
+            "割发代首告诉辅导员人");
 
     BulkRequest bulkRequest = new BulkRequest();
     bulkRequest.add(

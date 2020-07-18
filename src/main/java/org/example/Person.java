@@ -27,6 +27,9 @@ public class Person {
   @JsonFormat(pattern = "yyyy-MM-dd")
   private Date birthday;
 
+  private String province;
+
   private String address;
+  private String ipAddr;
   private String des;
 }
